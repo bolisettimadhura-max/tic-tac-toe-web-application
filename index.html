@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillCraft Tic Tac Toe</title>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Segoe UI,sans-serif;
+}
+
+body{
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+background:linear-gradient(135deg,#020024,#090979,#000428);
+color:white;
+}
+
+.container{
+width:75%;
+max-width:600px;
+text-align:center;
+}
+
+.header{
+padding:15px;
+margin-bottom:15px;
+border-radius:15px;
+background:rgba(255,255,255,0.08);
+}
+
+.header h1{
+font-size:28px;
+color:#38bdf8;
+}
+
+.header p{
+font-size:13px;
+margin-top:5px;
+}
+
+.theme-btn{
+margin-top:10px;
+padding:8px 15px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+background:#0ea5e9;
+color:white;
+}
+
+.game-box{
+background:rgba(255,255,255,0.08);
+padding:20px;
+border-radius:15px;
+}
+
+.title{
+font-size:36px;
+font-weight:bold;
+margin-bottom:15px;
+color:#f472b6;
+}
+
+.scoreboard{
+display:flex;
+justify-content:space-between;
+padding:12px;
+border-radius:10px;
+background:rgba(255,255,255,0.05);
+}
+
+.score{
+font-size:18px;
+font-weight:bold;
+}
+
+.x{
+color:#38bdf8;
+}
+
+.o{
+color:#f472b6;
+}
+
+#champion{
+margin:10px 0;
+font-size:16px;
+color:gold;
+font-weight:bold;
+}
+
+#status{
+margin:10px 0;
+padding:10px;
+font-size:18px;
+background:rgba(255,255,255,0.05);
+border-radius:10px;
+}
+
+.board{
+display:grid;
+grid-template-columns:repeat(3,75px);
+gap:8px;
+justify-content:center;
+margin:15px auto;
+}
+
+.cell{
+width:75px;
+height:75px;
+background:rgba(255,255,255,0.08);
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:32px;
+font-weight:bold;
+border-radius:10px;
+cursor:pointer;
+transition:.3s;
+}
+
+.cell:hover{
+transform:scale(1.08);
+box-shadow:0 0 15px #38bdf8;
+}
+
+.winner{
+background:#22c55e !important;
+color:white !important;
+box-shadow:0 0 20px #22c55e;
+}
+
+.restart-btn{
+padding:10px 20px;
+border:none;
+border-radius:10px;
+background:linear-gradient(90deg,#2563eb,#d946ef);
+color:white;
+cursor:pointer;
+}
+
+.footer{
+margin-top:15px;
+padding:10px;
+font-size:12px;
+background:rgba(255,255,255,0.05);
+border-radius:10px;
+}
+
+.light{
+background:#f8fafc;
+color:black;
+}
+
+@media(max-width:600px){
+
+.board{
+grid-template-columns:repeat(3,65px);
+}
+
+.cell{
+width:65px;
+height:65px;
+font-size:28px;
+}
+
+.title{
+font-size:30px;
+}
+
+.header h1{
+font-size:24px;
+}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+<h1>SkillCraft Technology</h1>
+<p>Interactive Tic Tac Toe Web Application</p>
+
+<button class="theme-btn" onclick="toggleTheme()">
+🌙 Theme
+</button>
+</div>
+
+<div class="game-box">
+
+<div class="title">TIC TAC TOE</div>
+
+<div class="scoreboard">
+<div class="score x">
+X: <span id="xScore">0</span>
+</div>
+
+<div>🏆</div>
+
+<div class="score o">
+O: <span id="oScore">0</span>
+</div>
+</div>
+
+<div id="champion">🏆 Champion : None</div>
+
+<div id="status">Player X's Turn</div>
+
+<div class="board">
+<div class="cell" data-index="0"></div>
+<div class="cell" data-index="1"></div>
+<div class="cell" data-index="2"></div>
+<div class="cell" data-index="3"></div>
+<div class="cell" data-index="4"></div>
+<div class="cell" data-index="5"></div>
+<div class="cell" data-index="6"></div>
+<div class="cell" data-index="7"></div>
+<div class="cell" data-index="8"></div>
+</div>
+
+<button class="restart-btn" id="restartBtn">
+🔄 Restart Game
+</button>
+
+</div>
+
+<div class="footer">
+🚀 Developed for SkillCraft Technology Internship Program
+</div>
+
+</div>
+
+<script>
+
+const cells=document.querySelectorAll(".cell");
+const statusText=document.getElementById("status");
+const restartBtn=document.getElementById("restartBtn");
+
+const xScoreText=document.getElementById("xScore");
+const oScoreText=document.getElementById("oScore");
+const champion=document.getElementById("champion");
+
+let currentPlayer="X";
+let gameActive=true;
+
+let xScore=0;
+let oScore=0;
+
+let gameState=["","","","","","","","",""];
+
+const wins=[
+[0,1,2],
+[3,4,5],
+[6,7,8],
+[0,3,6],
+[1,4,7],
+[2,5,8],
+[0,4,8],
+[2,4,6]
+];
+
+cells.forEach(cell=>{
+cell.addEventListener("click",handleClick);
+});
+
+restartBtn.addEventListener("click",restartGame);
+
+function handleClick(){
+
+const index=this.dataset.index;
+
+if(gameState[index]!=="" || !gameActive) return;
+
+gameState[index]=currentPlayer;
+this.textContent=currentPlayer;
+
+this.style.color=
+currentPlayer==="X" ? "#38bdf8" : "#f472b6";
+
+checkWinner();
+}
+
+function checkWinner(){
+
+for(let condition of wins){
+
+const [a,b,c]=condition;
+
+if(
+gameState[a] &&
+gameState[a]===gameState[b] &&
+gameState[a]===gameState[c]
+){
+
+cells[a].classList.add("winner");
+cells[b].classList.add("winner");
+cells[c].classList.add("winner");
+
+statusText.textContent=
+`🎉 Player ${currentPlayer} Wins!`;
+
+confetti({
+particleCount:100,
+spread:80
+});
+
+if(currentPlayer==="X"){
+xScore++;
+xScoreText.textContent=xScore;
+}else{
+oScore++;
+oScoreText.textContent=oScore;
+}
+
+updateChampion();
+
+gameActive=false;
+return;
+}
+}
+
+if(!gameState.includes("")){
+statusText.textContent="🤝 Match Draw!";
+gameActive=false;
+return;
+}
+
+currentPlayer=currentPlayer==="X" ? "O" : "X";
+
+statusText.textContent=
+`Player ${currentPlayer}'s Turn`;
+}
+
+function updateChampion(){
+
+if(xScore>oScore){
+champion.textContent="🏆 Champion : Player X";
+}
+else if(oScore>xScore){
+champion.textContent="🏆 Champion : Player O";
+}
+else{
+champion.textContent="🏆 Champion : Tie";
+}
+}
+
+function restartGame(){
+
+gameState=["","","","","","","","",""];
+currentPlayer="X";
+gameActive=true;
+
+statusText.textContent="Player X's Turn";
+
+cells.forEach(cell=>{
+cell.textContent="";
+cell.classList.remove("winner");
+});
+}
+
+function toggleTheme(){
+document.body.classList.toggle("light");
+}
+
+</script>
+
+</body>
+</html>
